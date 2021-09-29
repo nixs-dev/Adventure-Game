@@ -2,6 +2,7 @@ import pygame
 from Objects.Player import Player
 from Objects.Ground import Ground
 from Objects.Monster_Mushroom import Mushroom
+from Objects.GameOverFrame import GameOverFrame, TryAgainButton
 
 
 class World():
@@ -13,6 +14,8 @@ class World():
 	monsters = []
 	currentMonster = None
 	gameEnd = False
+	gameOver = None
+	tryAgainButton = None
 
 	screen = pygame.display.set_mode(screen_size)
 	background = pygame.image.load('assets/sprites/background.jpg')
@@ -22,17 +25,16 @@ class World():
 	def __init__(self):
 		pygame.init()
 
-		self.player = Player(self)
-		self.ground = Ground(self.screen_size)
-		self.loadMonsters()
-
+		self.loadInitialWorldData()
+		
 		while self.canRun:
+
 			for event in pygame.event.get():
 				if event.type == pygame.QUIT:	
 					self.canRun = False
 
 				self.player.checkCoolDowns(event) if not self.gameEnd else 0
-
+				self.tryAgainButton.checkClick(event, self) if self.gameOver != None else 0 
 
 			self.drawWorld()
 
@@ -43,11 +45,32 @@ class World():
 				self.checkCollision()
 				self.objetsMovement()
 				self.player.updateAnimFrame()
+			else:
+				self.drawGameOver()
 
 			pygame.display.flip()
 			pygame.time.Clock().tick(30)
 
 		pygame.quit()
+
+
+	def loadInitialWorldData(self):
+		self.monsters = []
+		self.currentMonster = None
+		self.gameEnd = False
+		self.gameOver = None
+		self.tryAgainButton = None
+		self.canRun = True
+		self.player = Player(self)
+		self.ground = Ground(self.screen_size)
+		self.loadMonsters()
+
+	def drawGameOver(self):
+		self.gameOver = GameOverFrame(self.screen_size)
+		self.tryAgainButton = TryAgainButton(self.screen_size)
+
+		self.screen.blit(self.gameOver.surf, self.gameOver.rect)
+		self.screen.blit(self.tryAgainButton.surf, self.tryAgainButton.rect)
 
 	def loadMonsters(self):
 		for i in range(0, self.monsterAmount):

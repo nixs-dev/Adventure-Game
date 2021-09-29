@@ -30,6 +30,7 @@ class Player(pygame.sprite.Sprite):
         'running_player': [],
         'jumping_player': [],
         'dying_player': [],
+        'falling_player': [],
     }
     currentAnimation = ['idle_player', 0, True, None]
     
@@ -68,18 +69,24 @@ class Player(pygame.sprite.Sprite):
         run = 'assets/sprites/player/run/'
         jump = 'assets/sprites/player/jump/'
         dead = 'assets/sprites/player/dead/'
+        fall = 'assets/sprites//player/fall/'
 
         idle_sprites = self.fixSpriteList(idle, os.listdir(idle))
         run_sprites = self.fixSpriteList(run, os.listdir(run))
         jump_sprites = self.fixSpriteList(jump, os.listdir(jump))
         dead_sprites = self.fixSpriteList(dead, os.listdir(dead))
+        fall_sprites = self.fixSpriteList(fall, os.listdir(fall))
+
 
         self.animations['idle_player'] = idle_sprites
         self.animations['running_player'] = run_sprites
         self.animations['jumping_player'] = jump_sprites
         self.animations['dying_player'] = dead_sprites
+        self.animations['falling_player'] = fall_sprites
 
     def loadLifes(self):
+        self.lifes = []
+        
         previous_pos = -50
         for i in range(0, self.maxLifes):
             previous_pos += 50
@@ -126,6 +133,8 @@ class Player(pygame.sprite.Sprite):
             else:
                 self.updateAnim('idle_player', True, None)
 
+        if not self.onTheGround and not self.isJumping:
+            self.updateAnim('falling_player', False, None)
         self.checkLimits()
 
     def loseLife(self):
