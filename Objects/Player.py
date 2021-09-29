@@ -1,31 +1,44 @@
 import pygame
 import os
+from Objects.Heart import Heart
 
 
 class Player(pygame.sprite.Sprite):
+    scene = None
     flipped = False
-    speed = 4
-    MaxSpeed = 4
-    gravity = 3
-    jumpForce = 5
-    maxJumpHeight = 30
+    maxLifes = 3
+    lifesAmount = 3
+    lifes = []
+    speed = 7
+    MaxSpeed = 7
+    gravity = 7
+    jumpForce = 10
+    maxJumpHeight = 100
     jumpHeight = 0
     onTheGround = False
     canBack = True
     canGo = True
     isJumping = False
     position = [0, 0]
+    intangible = False
+    intangibility_event = pygame.USEREVENT 
+    intangibleTimer = 2000 #2 seconds
     sprite_size = (75, 100)
+    dead = False
     animations = {
         'idle_player' : [],
-        'running_player': []
+        'running_player': [],
+        'jumping_player': [],
+        'dying_player': [],
     }
-    currentAnimation = ['idle_player', 0]
+    currentAnimation = ['idle_player', 0, True, None]
     
 
-    def __init__(self):
+    def __init__(self, scene):
         super(Player, self).__init__()
+        self.scene = scene
         self.loadSprites()
+        self.loadLifes()
 
         self.surf = pygame.Surface(self.sprite_size, pygame.SRCALPHA)
         self.surf.blit(self.animations['idle_player'][0], (0,0))
@@ -53,14 +66,30 @@ class Player(pygame.sprite.Sprite):
     def loadSprites(self):
         idle = 'assets/sprites/player/idle/'
         run = 'assets/sprites/player/run/'
+        jump = 'assets/sprites/player/jump/'
+        dead = 'assets/sprites/player/dead/'
 
         idle_sprites = self.fixSpriteList(idle, os.listdir(idle))
         run_sprites = self.fixSpriteList(run, os.listdir(run))
-        
+        jump_sprites = self.fixSpriteList(jump, os.listdir(jump))
+        dead_sprites = self.fixSpriteList(dead, os.listdir(dead))
+
         self.animations['idle_player'] = idle_sprites
         self.animations['running_player'] = run_sprites
+        self.animations['jumping_player'] = jump_sprites
+        self.animations['dying_player'] = dead_sprites
+
+    def loadLifes(self):
+        previous_pos = -50
+        for i in range(0, self.maxLifes):
+            previous_pos += 50
+            heart = Heart(previous_pos)
+            self.lifes.append(heart)
 
     def move(self, x, y):
+        if self.dead:
+            return 
+
         x = x * self.speed
 
         if x < 0:
@@ -78,6 +107,7 @@ class Player(pygame.sprite.Sprite):
 
         if y < 0:
             self.isJumping = True
+            self.updateAnim('jumping_player', False, None)
 
         if self.isJumping:
             y = -1 * self.jumpForce
@@ -90,30 +120,75 @@ class Player(pygame.sprite.Sprite):
         self.rect.x += x
         self.rect.y += y
 
-        if x != 0:
-            self.updateAnim('running_player')
+        if self.onTheGround and not self.isJumping:
+            if x != 0:
+                self.updateAnim('running_player', True, None)
+            else:
+                self.updateAnim('idle_player', True, None)
+
+        self.checkLimits()
+
+    def loseLife(self):
+        if self.lifesAmount > 0:
+            if not self.intangible:
+                self.lifesAmount -= 1
+                self.lifes[self.lifesAmount].off()
+
+                self.get_intangible()
         else:
-            self.updateAnim('idle_player')
+            self.dead = True
+            self.updateAnim('dying_player', False, self.die)
+
+    def checkCoolDowns(self, event):
+        if event.type == self.intangibility_event and self.intangible:
+            self.intangible = False
+            pygame.time.set_timer(self.intangibility_event, 0)
 
 
-    def updateAnim(self, whichOne):
+    def get_intangible(self):
+        pygame.time.set_timer(self.intangibility_event, self.intangibleTimer)
+        self.intangible = True
+
+    def checkLimits(self):
+        if self.rect.x <= 0:
+            self.canBack = False
+        else:
+            self.canBack = True
+
+        if self.rect.x >= self.scene.screen_size[0] - self.sprite_size[0]:
+            self.canGo = False
+        else:
+            self.canGo = True
+
+
+    def updateAnim(self, whichOne, repeat, finalAction):
         if self.currentAnimation[0] != whichOne:
-            self.currentAnimation = [whichOne, 0]
+            self.currentAnimation = [whichOne, 0, repeat, finalAction]
             self.surf = pygame.Surface(self.sprite_size, pygame.SRCALPHA)
             self.surf.blit(self.animations[whichOne][0], (0,0))
 
     def updateAnimFrame(self):
+        currentFrame = self.currentAnimation[1]
         try:
             self.currentAnimation[1] += 1
             nextFrame = self.animations[self.currentAnimation[0]][self.currentAnimation[1]]
         except IndexError:
-            self.currentAnimation[1] = 0
-            nextFrame = self.animations[self.currentAnimation[0]][self.currentAnimation[1]]
+            if self.currentAnimation[2]:
+                self.currentAnimation[1] = 0
+                nextFrame = self.animations[self.currentAnimation[0]][self.currentAnimation[1]]
+            else:
+                nextFrame = self.animations[self.currentAnimation[0]][currentFrame]
+                self.currentAnimation[1] = currentFrame
+                self.currentAnimation[3]() if self.currentAnimation[3] != None else 0
         finally:
             self.surf = pygame.Surface(self.sprite_size, pygame.SRCALPHA)
             self.surf.blit(nextFrame, (0,0))
 
 
+
     def fallDueGravity(self):
-        if not self.isJumping:
+        if not self.isJumping and not self.onTheGround:
             self.rect.y += self.gravity
+
+    def die(self):
+        self.scene.gameEnd = True
