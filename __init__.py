@@ -17,9 +17,12 @@ class World():
 	gameOver = None
 	tryAgainButton = None
 
+	background_size = (screen_size[0] * 3, screen_size[1])
+	parallaxBackgroundPosition = [0, 0]
+
 	screen = pygame.display.set_mode(screen_size)
-	background = pygame.image.load('assets/sprites/background.jpg')
-	background = pygame.transform.scale(background, screen_size)
+	background = pygame.image.load('assets/sprites/background.png')
+	background = pygame.transform.scale(background, background_size)
 	canRun = True
 	
 	def __init__(self):
@@ -36,6 +39,7 @@ class World():
 				self.player.checkCoolDowns(event) if not self.gameEnd else 0
 				self.tryAgainButton.checkClick(event, self) if self.gameOver != None else 0 
 
+			self.parallaxUpdate()
 			self.drawWorld()
 
 			##FRAME OBJECTS ACTIONS###
@@ -64,6 +68,12 @@ class World():
 		self.player = Player(self)
 		self.ground = Ground(self.screen_size)
 		self.loadMonsters()
+
+	def parallaxUpdate(self):
+		self.parallaxBackgroundPosition[0] -= 10
+		
+		if -self.parallaxBackgroundPosition[0] + self.screen_size[0] >= self.background_size[0]:
+			self.parallaxBackgroundPosition[0] = 0
 
 	def drawGameOver(self):
 		self.gameOver = GameOverFrame(self.screen_size)
@@ -102,7 +112,7 @@ class World():
 
 	def drawWorld(self):
 		self.screen.fill((255, 255, 255))
-		self.screen.blit(self.background, [0, 0])
+		self.screen.blit(self.background, self.parallaxBackgroundPosition)
 		self.screen.blit(self.ground.surf, self.ground.rect)
 
 	

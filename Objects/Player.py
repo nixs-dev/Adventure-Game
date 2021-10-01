@@ -22,7 +22,7 @@ class Player(pygame.sprite.Sprite):
     position = [0, 0]
     intangible = False
     intangibility_event = pygame.USEREVENT 
-    intangibleTimer = 2000 #2 seconds
+    intangibleTimer = 1000 #2 seconds
     sprite_size = (75, 100)
     dead = False
     animations = {
@@ -85,8 +85,7 @@ class Player(pygame.sprite.Sprite):
         self.animations['falling_player'] = fall_sprites
 
     def loadLifes(self):
-        self.lifes = []
-        
+        self.lifes = []      
         previous_pos = -50
         for i in range(0, self.maxLifes):
             previous_pos += 50
@@ -190,9 +189,7 @@ class Player(pygame.sprite.Sprite):
                 self.currentAnimation[1] = currentFrame
                 self.currentAnimation[3]() if self.currentAnimation[3] != None else 0
         finally:
-            self.surf = pygame.Surface(self.sprite_size, pygame.SRCALPHA)
-            self.surf.blit(nextFrame, (0,0))
-
+            self.checkEffects(nextFrame)
 
 
     def fallDueGravity(self):
@@ -201,3 +198,16 @@ class Player(pygame.sprite.Sprite):
 
     def die(self):
         self.scene.gameEnd = True
+
+    def checkEffects(self, nextFrame):
+        if self.intangible and not self.dead:
+            self.intangibility_effect(nextFrame)
+        else:
+            nextFrame.set_alpha(255)
+            self.surf = pygame.Surface(self.sprite_size, pygame.SRCALPHA)
+            self.surf.blit(nextFrame, (0,0))
+
+    def intangibility_effect(self, nextFrame):
+        nextFrame.set_alpha(127)
+        self.surf = pygame.Surface(self.sprite_size, pygame.SRCALPHA)
+        self.surf.blit(nextFrame, (0,0))
