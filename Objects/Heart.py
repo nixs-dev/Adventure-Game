@@ -1,7 +1,7 @@
 import pygame
 
 class Heart(pygame.sprite.Sprite):
-    heart_sprite = pygame.image.load('assets/sprites/heart_alive.png')
+    heart_sprite = pygame.image.load('assets/chars_sprites/heart_alive.png')
     on = True
     position = []
     size = [20, 20]
@@ -20,7 +20,7 @@ class Heart(pygame.sprite.Sprite):
 
     def off(self):
         self.surf = pygame.Surface(self.size, pygame.SRCALPHA)
-        self.heart_sprite = pygame.image.load('assets/sprites/heart_dead.png')
+        self.heart_sprite = pygame.image.load('assets/chars_sprites/heart_dead.png')
         self.heart_sprite = pygame.transform.scale(self.heart_sprite, self.size)
         self.surf.blit(self.heart_sprite, (0,0))
         self.on = False

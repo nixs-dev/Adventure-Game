@@ -1,7 +1,7 @@
 import pygame
 
 class Ground(pygame.sprite.Sprite):
-    ground_sprite = pygame.image.load('assets/sprites/ground.png')
+    ground_sprite = pygame.image.load('assets/chars_sprites/ground.png')
     position = [0, 400]
 
     def __init__(self, screen_size):

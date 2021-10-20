@@ -6,6 +6,7 @@ from Objects.Heart import Heart
 class Player(pygame.sprite.Sprite):
     scene = None
     flipped = False
+    char_code = ''
     maxLifes = 3
     lifesAmount = 3
     lifes = []
@@ -22,7 +23,7 @@ class Player(pygame.sprite.Sprite):
     position = [0, 0]
     intangible = False
     intangibility_event = pygame.USEREVENT 
-    intangibleTimer = 1000 #2 seconds
+    intangibleTimer = 1000 #1 second
     sprite_size = (75, 100)
     dead = False
     animations = {
@@ -33,19 +34,20 @@ class Player(pygame.sprite.Sprite):
         'falling_player': [],
     }
     currentAnimation = ['idle_player', 0, True, None]
-    
 
-    def __init__(self, scene):
+    def __init__(self, scene, char_code):
         super(Player, self).__init__()
+        self.char_code = char_code
+
         self.scene = scene
-        self.loadSprites()
-        self.loadLifes()
+        self.load_sprites()
+        self.load_lifes()
 
         self.surf = pygame.Surface(self.sprite_size, pygame.SRCALPHA)
         self.surf.blit(self.animations['idle_player'][0], (0,0))
         self.rect = self.surf.get_rect(x=self.position[0], y=self.position[1])
 
-    def fixSpriteList(self, origin, list_):
+    def fix_sprite_list(self, origin, list_):
         tempList = []
         finalList = []
 
@@ -64,18 +66,18 @@ class Player(pygame.sprite.Sprite):
 
         return finalList
 
-    def loadSprites(self):
-        idle = 'assets/sprites/player/idle/'
-        run = 'assets/sprites/player/run/'
-        jump = 'assets/sprites/player/jump/'
-        dead = 'assets/sprites/player/dead/'
-        fall = 'assets/sprites//player/fall/'
+    def load_sprites(self):
+        idle = 'assets/chars_sprites/{}/idle/'.format(self.char_code)
+        run = 'assets/chars_sprites/{}/run/'.format(self.char_code)
+        jump = 'assets/chars_sprites/{}/jump/'.format(self.char_code)
+        dead = 'assets/chars_sprites/{}/dead/'.format(self.char_code)
+        fall = 'assets/chars_sprites/{}/fall/'.format(self.char_code)
 
-        idle_sprites = self.fixSpriteList(idle, os.listdir(idle))
-        run_sprites = self.fixSpriteList(run, os.listdir(run))
-        jump_sprites = self.fixSpriteList(jump, os.listdir(jump))
-        dead_sprites = self.fixSpriteList(dead, os.listdir(dead))
-        fall_sprites = self.fixSpriteList(fall, os.listdir(fall))
+        idle_sprites = self.fix_sprite_list(idle, os.listdir(idle))
+        run_sprites = self.fix_sprite_list(run, os.listdir(run))
+        jump_sprites = self.fix_sprite_list(jump, os.listdir(jump))
+        dead_sprites = self.fix_sprite_list(dead, os.listdir(dead))
+        fall_sprites = self.fix_sprite_list(fall, os.listdir(fall))
 
 
         self.animations['idle_player'] = idle_sprites
@@ -84,7 +86,7 @@ class Player(pygame.sprite.Sprite):
         self.animations['dying_player'] = dead_sprites
         self.animations['falling_player'] = fall_sprites
 
-    def loadLifes(self):
+    def load_lifes(self):
         self.lifes = []      
         previous_pos = -50
         for i in range(0, self.maxLifes):
@@ -113,7 +115,7 @@ class Player(pygame.sprite.Sprite):
 
         if y < 0:
             self.isJumping = True
-            self.updateAnim('jumping_player', False, None)
+            self.update_anim('jumping_player', False, None)
 
         if self.isJumping:
             y = -1 * self.jumpForce
@@ -128,15 +130,15 @@ class Player(pygame.sprite.Sprite):
 
         if self.onTheGround and not self.isJumping:
             if x != 0:
-                self.updateAnim('running_player', True, None)
+                self.update_anim('running_player', True, None)
             else:
-                self.updateAnim('idle_player', True, None)
+                self.update_anim('idle_player', True, None)
 
         if not self.onTheGround and not self.isJumping:
-            self.updateAnim('falling_player', False, None)
-        self.checkLimits()
+            self.update_anim('falling_player', False, None)
+        self.check_limits()
 
-    def loseLife(self):
+    def lose_life(self):
         if self.lifesAmount > 0:
             if not self.intangible:
                 self.lifesAmount -= 1
@@ -145,9 +147,9 @@ class Player(pygame.sprite.Sprite):
                 self.get_intangible()
         else:
             self.dead = True
-            self.updateAnim('dying_player', False, self.die)
+            self.update_anim('dying_player', False, self.die)
 
-    def checkCoolDowns(self, event):
+    def check_cooldowns(self, event):
         if event.type == self.intangibility_event and self.intangible:
             self.intangible = False
             pygame.time.set_timer(self.intangibility_event, 0)
@@ -157,7 +159,7 @@ class Player(pygame.sprite.Sprite):
         pygame.time.set_timer(self.intangibility_event, self.intangibleTimer)
         self.intangible = True
 
-    def checkLimits(self):
+    def check_limits(self):
         if self.rect.x <= 0:
             self.canBack = False
         else:
@@ -169,13 +171,13 @@ class Player(pygame.sprite.Sprite):
             self.canGo = True
 
 
-    def updateAnim(self, whichOne, repeat, finalAction):
+    def update_anim(self, whichOne, repeat, finalAction):
         if self.currentAnimation[0] != whichOne:
             self.currentAnimation = [whichOne, 0, repeat, finalAction]
             self.surf = pygame.Surface(self.sprite_size, pygame.SRCALPHA)
             self.surf.blit(self.animations[whichOne][0], (0,0))
 
-    def updateAnimFrame(self):
+    def update_anim_frame(self):
         currentFrame = self.currentAnimation[1]
         try:
             self.currentAnimation[1] += 1
@@ -189,17 +191,17 @@ class Player(pygame.sprite.Sprite):
                 self.currentAnimation[1] = currentFrame
                 self.currentAnimation[3]() if self.currentAnimation[3] != None else 0
         finally:
-            self.checkEffects(nextFrame)
+            self.check_effects(nextFrame)
 
 
-    def fallDueGravity(self):
+    def fall_due_gravity(self):
         if not self.isJumping and not self.onTheGround:
             self.rect.y += self.gravity
 
     def die(self):
         self.scene.gameEnd = True
 
-    def checkEffects(self, nextFrame):
+    def check_effects(self, nextFrame):
         if self.intangible and not self.dead:
             self.intangibility_effect(nextFrame)
         else:

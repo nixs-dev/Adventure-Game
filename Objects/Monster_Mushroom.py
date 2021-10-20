@@ -11,7 +11,7 @@ class Mushroom(pygame.sprite.Sprite):
 	GoToRight = False
 	spawn_pos = [500, 40]
 	sprite_size = [30, 30]
-	idle_sprite = pygame.image.load('assets/sprites/monsters/mushroom/idle.png')
+	idle_sprite = pygame.image.load('assets/chars_sprites/monsters/mushroom/idle.png')
 
 	def __init__(self, scene):
 		super(Mushroom, self).__init__()
