@@ -3,7 +3,7 @@ import os
 
 class Character:
 
-    chars_icon = os.path.dirname(os.path.realpath(__file__)).replace('controllers', '') + 'assets\\chars_icon\\'
+    chars_icon = 'assets\\chars_icon\\'
 
 
     def get_all_icon():

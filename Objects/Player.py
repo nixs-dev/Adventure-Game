@@ -1,5 +1,6 @@
 import pygame
 import os
+import importlib.util
 from Objects.Heart import Heart
 
 
@@ -22,7 +23,12 @@ class Player(pygame.sprite.Sprite):
     isJumping = False
     position = [0, 0]
     intangible = False
-    intangibility_event = pygame.USEREVENT 
+    intangibility_event = pygame.USEREVENT
+    skills_cooldowns = {
+        'damage_skill': [pygame.USEREVENT + 1, 2000, True],
+        'scape_skill': [pygame.USEREVENT + 2, 5000, True],
+        'Internals': {}
+    }
     intangibleTimer = 1000 #1 second
     sprite_size = (75, 100)
     dead = False
@@ -33,7 +39,14 @@ class Player(pygame.sprite.Sprite):
         'dying_player': [],
         'falling_player': [],
     }
+    skills = {
+        'damage_skill': None,
+        'scape_skill': None
+    }
+
+    jump_default_song = None
     currentAnimation = ['idle_player', 0, True, None]
+    actived_skills = []
 
     def __init__(self, scene, char_code):
         super(Player, self).__init__()
@@ -41,11 +54,14 @@ class Player(pygame.sprite.Sprite):
 
         self.scene = scene
         self.load_sprites()
+        self.load_songs()
         self.load_lifes()
 
         self.surf = pygame.Surface(self.sprite_size, pygame.SRCALPHA)
         self.surf.blit(self.animations['idle_player'][0], (0,0))
         self.rect = self.surf.get_rect(x=self.position[0], y=self.position[1])
+
+        self.load_skills()
 
     def fix_sprite_list(self, origin, list_):
         tempList = []
@@ -86,6 +102,22 @@ class Player(pygame.sprite.Sprite):
         self.animations['dying_player'] = dead_sprites
         self.animations['falling_player'] = fall_sprites
 
+    def load_songs(self):
+        self.jump_default_song = pygame.mixer.Sound('assets/general_songs/jump.mp3')
+
+    def load_skills(self):
+        skills_path = 'Objects/skills/{}/'.format(self.char_code)
+
+        for skill in os.listdir(skills_path):
+            skill_name = skill.split('.')[0]
+
+            if skill_name in self.skills:
+                spec = importlib.util.spec_from_file_location(skill_name, skills_path + skill)
+                foo = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(foo)
+                self.skills[skill_name] = foo.Skill
+
+
     def load_lifes(self):
         self.lifes = []      
         previous_pos = -50
@@ -113,17 +145,24 @@ class Player(pygame.sprite.Sprite):
             if self.flipped:
                 self.flipped = False
 
-        if y < 0:
-            self.isJumping = True
-            self.update_anim('jumping_player', False, None)
+        if self.gravity > 0:
+            y = 0 if not self.onTheGround else y
 
-        if self.isJumping:
-            y = -1 * self.jumpForce
-            self.jumpHeight -= y
+            if y < 0:
+                self.isJumping = True
+                self.update_anim('jumping_player', False, None)
+                self.play_song(self.jump_default_song)
 
-        if self.jumpHeight == self.maxJumpHeight:
-            self.isJumping = False
-            self.jumpHeight = 0
+            if self.isJumping:
+                y = -1 * self.jumpForce
+                self.jumpHeight -= y
+
+            if self.jumpHeight >= self.maxJumpHeight:
+                self.isJumping = False
+                self.jumpHeight = 0
+        else:
+            if y < 0:
+                y = y * self.speed
 
         self.rect.x += x
         self.rect.y += y
@@ -136,7 +175,29 @@ class Player(pygame.sprite.Sprite):
 
         if not self.onTheGround and not self.isJumping:
             self.update_anim('falling_player', False, None)
+
+        self.skills_move()
         self.check_limits()
+
+    def use_skill(self, which):
+        if not self.skills_cooldowns[which][2]:
+            return
+
+        skill_index = len(self.actived_skills)
+        skill = self.skills[which](self, self.scene, skill_index)
+
+        self.scene.screen.blit(skill.surf, skill.rect)
+        self.actived_skills.append(skill)
+
+        pygame.time.set_timer(self.skills_cooldowns[which][0], self.skills_cooldowns[which][1])
+        self.skills_cooldowns[which][2] = False
+
+    def skills_move(self):
+        for s in self.actived_skills:
+            s.move()
+
+    def play_song(self, which):
+        which.play()
 
     def lose_life(self):
         if self.lifesAmount > 0:
@@ -154,6 +215,20 @@ class Player(pygame.sprite.Sprite):
             self.intangible = False
             pygame.time.set_timer(self.intangibility_event, 0)
 
+            return
+
+        for k in self.skills_cooldowns:
+            if k != 'Internals':
+                if self.skills_cooldowns[k][0] == event.type:
+                    self.skills_cooldowns[k][2] = True
+                    pygame.time.set_timer(self.skills_cooldowns[k][0], 0)
+
+                    return
+
+        for i in self.skills_cooldowns['Internals']:
+            if event.type == self.skills_cooldowns['Internals'][i][0]:
+                pygame.time.set_timer(self.skills_cooldowns['Internals'][i][0], 0)
+                self.skills_cooldowns['Internals'][i][1]()
 
     def get_intangible(self):
         pygame.time.set_timer(self.intangibility_event, self.intangibleTimer)

@@ -1,4 +1,5 @@
 import pygame
+import os
 from Objects.Player import Player
 from Objects.Ground import Ground
 from Objects.Monster_Mushroom import Mushroom
@@ -7,7 +8,10 @@ from Objects.GameOverFrame import GameOverFrame, TryAgainButton
 
 class Game():
     player = None
+    current_player_code = ''
+    current_scene_code = ''
     ground = None
+    scene_song = None
     screen_size = [1024, 500]
     monsterAmount = 1
     monsters = []
@@ -20,14 +24,16 @@ class Game():
     parallaxBackgroundPosition = [0, 0]
 
     screen = pygame.display.set_mode(screen_size)
-    background = pygame.image.load('assets/chars_sprites/background.png')
+    background = pygame.image.load('assets/general_sprites/background.png')
     background = pygame.transform.scale(background, background_size)
     canRun = True
 
-    def __init__(self, char_code):
+    def __init__(self, char_code, scene_code='default_scene'):
         pygame.init()
 
-        self.load_initial_world_data(char_code)
+        self.current_player_code = char_code
+        self.current_scene_code = scene_code
+        self.load_initial_world_data()
 
         while self.canRun:
 
@@ -36,7 +42,7 @@ class Game():
                     self.canRun = False
 
                 self.player.check_cooldowns(event) if not self.gameEnd else 0
-                self.tryAgainButton.checkClick(event, self) if self.gameOver != None else 0
+                self.tryAgainButton.checkClick(event, self) if self.gameOver is not None else 0
 
             self.parallax_update()
             self.draw_world()
@@ -56,16 +62,32 @@ class Game():
 
         pygame.quit()
 
-    def load_initial_world_data(self, char_code):
+    def load_initial_world_data(self):
         self.monsters = []
         self.currentMonster = None
         self.gameEnd = False
         self.gameOver = None
         self.tryAgainButton = None
         self.canRun = True
-        self.player = Player(self, char_code)
+        self.player = Player(self, self.current_player_code)
         self.ground = Ground(self.screen_size)
         self.load_monsters()
+        self.start_scene_song()
+
+    def start_scene_song(self):
+        self.scene_song.stop() if self.scene_song is not None else 0
+
+        songs_path = 'assets/scenes_songs/'
+        song = ''
+
+        for s in os.listdir(songs_path):
+            if s.split('.')[0] == self.current_scene_code:
+                song = songs_path + s
+                break
+
+        self.scene_song = pygame.mixer.Sound(song)
+        self.scene_song.play(loops=10)
+        self.scene_song.set_volume(0.3)
 
     def parallax_update(self):
         self.parallaxBackgroundPosition[0] -= 5
@@ -97,14 +119,24 @@ class Game():
 
         keys = pygame.key.get_pressed()
 
-        if keys[pygame.K_UP] and self.player.onTheGround:
-            self.player.move(0, -1)
-        elif keys[pygame.K_RIGHT]:
-            self.player.move(1, 0)
-        elif keys[pygame.K_LEFT]:
-            self.player.move(-1, 0)
+        if keys[pygame.K_UP] and keys[pygame.K_RIGHT]:
+            self.player.move(1, -1)
+        elif keys[pygame.K_UP] and keys[pygame.K_LEFT]:
+            self.player.move(-1, -1)
         else:
-            self.player.move(0, 0)
+            if keys[pygame.K_UP]:
+                self.player.move(0, -1)
+            elif keys[pygame.K_RIGHT]:
+                self.player.move(1, 0)
+            elif keys[pygame.K_LEFT]:
+                self.player.move(-1, 0)
+            else:
+                self.player.move(0, 0)
+
+        if keys[pygame.K_p]:
+            self.player.use_skill('damage_skill')
+        elif keys[pygame.K_o]:
+            self.player.use_skill('scape_skill')
 
         self.currentMonster.move()
 
@@ -125,3 +157,6 @@ class Game():
 
         for i in self.player.lifes:
             self.screen.blit(i.surf, i.rect)
+
+        for i in self.player.actived_skills:
+            self.screen.blit(i.surf, i. rect)

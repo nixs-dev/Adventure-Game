@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from controllers.Character import Character as Chars
 from controllers.Styler import Styler as Styler
+from controllers.SelectionPlayer import SelectionPlayer
 from views import Game as GameFile
 from functools import partial
 
@@ -8,6 +9,7 @@ from functools import partial
 class CharacterPick(QtWidgets.QMainWindow):
     window_width = 1024
     window_height = 700
+    sounds = SelectionPlayer()
 
     def __init__(self):
         super().__init__()
@@ -18,6 +20,7 @@ class CharacterPick(QtWidgets.QMainWindow):
         self.characters_layout = QtWidgets.QGridLayout(self.characters_panel)
 
     def pick_char(self, char_code, event):
+        self.sounds.picked_character()
         char_code = char_code.split('.')[0]
 
         self.close()
@@ -50,13 +53,14 @@ class CharacterPick(QtWidgets.QMainWindow):
 
     def setup(self):
         background_palette = QtGui.QPalette()
-        background_image = QtGui.QPixmap('assets/pick_screen_background.jpg').scaled(self.window_width, self.window_height)
+        background_image = QtGui.QPixmap('assets/general_sprites/pick_screen_background.jpg').scaled(self.window_width, self.window_height)
         background_palette.setBrush(10, QtGui.QBrush(background_image))
 
         self.setPalette(background_palette)
         self.setFixedSize(self.window_width, self.window_height)
         self.main_layout.setDirection(QtWidgets.QVBoxLayout.TopToBottom)
         self.main_layout.setAlignment(QtCore.Qt.AlignTop)
+        self.move(QtWidgets.QApplication.desktop().screen().rect().center() - self.rect().center())
 
         self.characters_layout.setAlignment(QtCore.Qt.AlignLeft)
         self.characters_layout.setAlignment(QtCore.Qt.AlignTop)

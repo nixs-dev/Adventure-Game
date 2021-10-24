@@ -2,7 +2,7 @@ import pygame
 
 class GameOverFrame(pygame.sprite.Sprite):
 
-	frame_sprite = pygame.image.load('assets/chars_sprites/gameOver.png')
+	frame_sprite = pygame.image.load('assets/general_sprites/gameOver.png')
 	button = None
 	sprite_size = [300, 300]
 	
@@ -22,7 +22,7 @@ class GameOverFrame(pygame.sprite.Sprite):
 
 class TryAgainButton(pygame.sprite.Sprite):
 	button_size = [200, 100]
-	button_sprite = pygame.image.load('assets/chars_sprites/tryAgainButton.png')
+	button_sprite = pygame.image.load('assets/general_sprites/tryAgainButton.png')
 	
 	def __init__(self, screen_size):
 		super(TryAgainButton, self).__init__()
@@ -39,4 +39,4 @@ class TryAgainButton(pygame.sprite.Sprite):
 		if event.type == pygame.MOUSEBUTTONDOWN:
 			if pygame.mouse.get_pressed()[0]:
 				if self.rect.collidepoint(x, y):
-					world.loadInitialWorldData()
+					world.load_initial_world_data()
