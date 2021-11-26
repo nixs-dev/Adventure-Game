@@ -1,2 +1,2 @@
 # PyGame-1
-Sample game. A boy that moves on scene
+Just a sample game. You can chose a character for run and survive monsters
