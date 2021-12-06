@@ -7,6 +7,7 @@ class Skill(pygame.sprite.Sprite):
     idle_sprite = None
     sprite_size = [50, 50]
     damage = 0
+    direction = 1
     teleport_distance = 200  # pixels
     timer_event = pygame.USEREVENT + 10
     skill_index = 0
@@ -18,9 +19,10 @@ class Skill(pygame.sprite.Sprite):
         self.player = player
         self.scene = scene
 
-        self.skill_index = pos_in_skill_order
+        self.direction = 1 if not self.player.flipped else -1
 
-        self.player.rect.x += self.teleport_distance
+        self.skill_index = pos_in_skill_order
+        self.player.rect.x += self.teleport_distance * self.direction
 
         self.blit_skill()
 
@@ -28,7 +30,6 @@ class Skill(pygame.sprite.Sprite):
         pass
 
     def blit_skill(self):
-
         self.surf = pygame.Surface(self.sprite_size, pygame.SRCALPHA)
         self.rect = self.surf.get_rect(x=self.player.rect.x, y=self.player.rect.y)
 
