@@ -34,18 +34,19 @@ class Animator:
             self.currentAnimation = [which_one, 0, self.repeat_anims[which_one], self.anims_calls[which_one]]
 
     def fix_sprite_list(self, origin, list_):
+        extension = list_[0].split('.')[-1]
         temp_list = []
         final_list = []
 
         for i in list_:
-            num = i.replace('.png', '')
+            num = i.replace(f'.{extension}', '')
             num = int(num)
             temp_list.append(num)
 
         temp_list = sorted(temp_list, key=int)
 
         for i in temp_list:
-            item = origin + str(i) + '.png'
+            item = origin + str(i) + '.' + extension
             item = pygame.image.load(item)
             item = pygame.transform.scale(item, self.frames_size)
             final_list.append(item)

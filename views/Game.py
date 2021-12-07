@@ -7,10 +7,12 @@ from objects.hosts.monsters.Evil_Wolf import Wolf
 from objects.Ground import Ground
 from objects.GameOverFrame import GameOverFrame, TryAgainButton
 from objects.WinnerFrame import WinnerFrame, PlayAgainButton
+from objects.SkillIcon import SkillIcon
 
 
 class Game:
     player = None
+    skills_icons = {}
     current_player_code = ''
     current_scene_code = ''
     ground = None
@@ -54,8 +56,10 @@ class Game:
             self.draw_world()
 
             ##OBJECTS ACTIONS###
+
             if not self.gameEnd:
                 self.draw_player()
+                self.draw_skills_icons()
                 self.draw_monsters()
                 self.check_collision()
                 self.objets_movement()
@@ -77,6 +81,10 @@ class Game:
         self.playAgainButton = None
         self.canRun = True
         self.player = Player(self, self.current_player_code)
+
+        self.skills_icons['damage_skill'] = SkillIcon(self.screen_size, 70, self.current_player_code, 'damage_skill')
+        self.skills_icons['scape_skill'] = SkillIcon(self.screen_size, 10, self.current_player_code, 'scape_skill')
+
         self.ground = Ground(self.screen_size)
         self.load_monsters()
         self.start_scene_song()
@@ -191,3 +199,7 @@ class Game:
 
         for i in self.player.actived_skills:
             i.blit_skill()
+
+    def draw_skills_icons(self):
+        for key in self.skills_icons:
+            self.screen.blit(self.skills_icons[key].surf, self.skills_icons[key].rect)

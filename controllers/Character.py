@@ -4,8 +4,9 @@ import os
 class Character:
 
     chars_icon = 'assets\\chars_icon\\'
+    skills_icon = 'assets\\skills_icons\\'
 
-
+    @staticmethod
     def get_all_icon():
         chars = []
 
@@ -17,3 +18,15 @@ class Character:
             })
 
         return chars
+
+    @staticmethod
+    def get_skill_icons_paths(player_code):
+        player_specific_path = Character.skills_icon + player_code + '\\'
+        skills = {}
+
+        for file in os.listdir(player_specific_path):
+            without_ext = file.split('.')[0]
+
+            skills[without_ext] = player_specific_path + file
+
+        return skills

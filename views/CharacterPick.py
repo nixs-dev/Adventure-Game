@@ -19,6 +19,8 @@ class CharacterPick(QtWidgets.QMainWindow):
         self.characters_panel = QtWidgets.QWidget()
         self.characters_layout = QtWidgets.QGridLayout(self.characters_panel)
 
+        self.setup()
+
     def pick_char(self, char_code, event):
         self.sounds.picked_character()
         char_code = char_code.split('.')[0]
