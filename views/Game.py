@@ -4,6 +4,7 @@ import random
 from objects.hosts.Player import Player
 from objects.hosts.monsters.Monster_Mushroom import Mushroom
 from objects.hosts.monsters.Evil_Wolf import Wolf
+from objects.hosts.bosses.Dragon import Dragon
 from objects.Ground import Ground
 from objects.GameOverFrame import GameOverFrame, TryAgainButton
 from objects.WinnerFrame import WinnerFrame, PlayAgainButton

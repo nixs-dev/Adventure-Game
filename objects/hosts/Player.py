@@ -2,7 +2,8 @@ import pygame
 import os
 import importlib.util
 from objects.Heart import Heart
-from utils import Animator
+from utils.Animator import Animator
+
 
 class Player(pygame.sprite.Sprite):
     scene = None
@@ -30,7 +31,7 @@ class Player(pygame.sprite.Sprite):
         'scape_skill': [pygame.USEREVENT + 2, 5000, True],
         'Internals': {}
     }
-    intangibleTimer = 1000 # 1 second
+    intangibleTimer = 1000 # Dragon second
     sprite_size = (75, 100)
     dead = False
     skills = {
@@ -89,7 +90,7 @@ class Player(pygame.sprite.Sprite):
             }
         ]
 
-        self.animator = Animator.Animator(animations_data, self.sprite_size)
+        self.animator = Animator(animations_data, self.sprite_size)
 
         self.surf = pygame.Surface(self.sprite_size, pygame.SRCALPHA)
         self.surf.blit(self.animator.get_current_frame(), (0, 0))

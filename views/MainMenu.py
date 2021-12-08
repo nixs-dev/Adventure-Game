@@ -8,6 +8,7 @@ from utils.Animator import Animator
 class MainMenu:
     scene_song = None
     screen_size = [1024, 500]
+    background_song = 'assets/main_menu/background_sound.mp3'
     title_font = None
     option_font = None
     pointer_surf = None
@@ -22,12 +23,17 @@ class MainMenu:
     options = []
     selected_option = 0
 
+    change_option_sound = None
+    change_option_sound_path = 'assets/main_menu/change_option_song.wav'
+
     def __init__(self):
         pygame.init()
         self.screen = pygame.display.set_mode(self.screen_size)
 
         self.title_font = pygame.font.Font('assets/fonts/Collegiate.ttf', 70)
         self.option_font = pygame.font.Font('assets/fonts/Collegiate.ttf', 30)
+
+        self.change_option_sound = pygame.mixer.Sound(self.change_option_sound_path)
 
         pointer_sprite = pygame.image.load('assets/main_menu/selector.png')
         pointer_sprite = pygame.transform.scale(pointer_sprite, self.pointer_sprite_size)
@@ -60,6 +66,9 @@ class MainMenu:
 
         self.background_animator = Animator(animations_data, self.background_size)
 
+        sound = pygame.mixer.Sound(self.background_song)
+        sound.play(loops=20)
+
         while self.canRun:
 
             for event in pygame.event.get():
@@ -88,8 +97,10 @@ class MainMenu:
 
         if keys[pygame.K_UP]:
             self.selected_option -= 1
+            self.change_option_sound.play()
         elif keys[pygame.K_DOWN]:
             self.selected_option += 1
+            self.change_option_sound.play()
         elif keys[pygame.K_RETURN]:
             self.options[self.selected_option]['callback']()
 
