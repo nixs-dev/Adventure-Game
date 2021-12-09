@@ -12,6 +12,8 @@ from objects.SkillIcon import SkillIcon
 
 
 class Game:
+
+    level = 1
     player = None
     skills_icons = {}
     current_player_code = ''
@@ -19,7 +21,7 @@ class Game:
     ground = None
     scene_song = None
     screen_size = [1024, 500]
-    monsterAmount = 5
+    monsterAmount = 2
     monsters = []
     currentMonster = None
     gameEnd = False
@@ -36,10 +38,13 @@ class Game:
     background = pygame.transform.scale(background, background_size)
     canRun = True
 
+    level_font = None
+
     def __init__(self, char_code, scene_code='default_scene'):
         pygame.init()
 
         self.screen = pygame.display.set_mode(self.screen_size)
+        self.level = 1
         self.current_player_code = char_code
         self.current_scene_code = scene_code
         self.load_initial_world_data()
@@ -51,10 +56,12 @@ class Game:
                     self.canRun = False
 
                 self.player.check_cooldowns(event) if not self.gameEnd else 0
-                self.tryAgainButton.checkClick(event, self) if self.gameOver is not None else 0
+                self.tryAgainButton.check_click(event, self) if self.gameOver is not None else 0
+                self.playAgainButton.check_click(event, self) if self.winner_frame is not None else 0
 
             self.parallax_update()
             self.draw_world()
+            self.draw_level()
 
             ##OBJECTS ACTIONS###
 
@@ -73,6 +80,7 @@ class Game:
         pygame.quit()
 
     def load_initial_world_data(self):
+        self.level = self.level
         self.monsters = []
         self.currentMonster = None
         self.gameEnd = False
@@ -86,9 +94,14 @@ class Game:
         self.skills_icons['damage_skill'] = SkillIcon(self.screen_size, 70, self.current_player_code, 'damage_skill')
         self.skills_icons['scape_skill'] = SkillIcon(self.screen_size, 10, self.current_player_code, 'scape_skill')
 
+        self.level_font = pygame.font.Font('assets/fonts/Collegiate.ttf', 30)
         self.ground = Ground(self.screen_size)
         self.load_monsters()
         self.start_scene_song()
+
+    def next_level(self):
+        self.level += 1
+        self.load_initial_world_data()
 
     def check_game_result(self):
         if len(self.monsters) == 0:
@@ -132,7 +145,7 @@ class Game:
         self.screen.blit(self.playAgainButton.surf, self.playAgainButton.rect)
 
     def load_monsters(self):
-        avaible_monsters = [Mushroom, Wolf]
+        avaible_monsters = [Wolf]
 
         for i in range(0, self.monsterAmount):
             random_monster = random.randint(0, len(avaible_monsters)-1)
@@ -200,6 +213,14 @@ class Game:
 
         for i in self.player.actived_skills:
             i.blit_skill()
+
+    def draw_level(self):
+        text_coordinates = [self.screen_size[0]//2, 10]
+
+        level_text = self.level_font.render(str(self.level), True, (255, 0, 255))
+        text_rect = level_text.get_rect(x=text_coordinates[0], y=text_coordinates[1])
+
+        self.screen.blit(level_text, text_rect)
 
     def draw_skills_icons(self):
         for key in self.skills_icons:

@@ -1,11 +1,11 @@
 import pygame
 
+
 class GameOverFrame(pygame.sprite.Sprite):
 
 	frame_sprite = pygame.image.load('assets/general_sprites/gameOver.png')
 	button = None
 	sprite_size = [300, 300]
-	
 
 	def __init__(self, screen_size):
 		super(GameOverFrame, self).__init__()
@@ -34,7 +34,7 @@ class TryAgainButton(pygame.sprite.Sprite):
 		self.surf.blit(self.button_sprite, (0, 0))
 		self.rect = self.surf.get_rect(x=position[0], y=position[1])
 
-	def checkClick(self, event, world):
+	def check_click(self, event, world):
 		x, y = pygame.mouse.get_pos()
 		if event.type == pygame.MOUSEBUTTONDOWN:
 			if pygame.mouse.get_pressed()[0]:

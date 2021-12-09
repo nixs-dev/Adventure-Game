@@ -1,11 +1,11 @@
 import pygame
 
+
 class WinnerFrame(pygame.sprite.Sprite):
 
 	frame_sprite = pygame.image.load('assets/general_sprites/winnerFrame.png')
 	button = None
 	sprite_size = [300, 300]
-	
 
 	def __init__(self, screen_size):
 		super().__init__()
@@ -34,9 +34,9 @@ class PlayAgainButton(pygame.sprite.Sprite):
 		self.surf.blit(self.button_sprite, (0, 0))
 		self.rect = self.surf.get_rect(x=position[0], y=position[1])
 
-	def checkClick(self, event, world):
+	def check_click(self, event, world):
 		x, y = pygame.mouse.get_pos()
 		if event.type == pygame.MOUSEBUTTONDOWN:
 			if pygame.mouse.get_pressed()[0]:
 				if self.rect.collidepoint(x, y):
-					world.load_initial_world_data()
+					world.next_level()
